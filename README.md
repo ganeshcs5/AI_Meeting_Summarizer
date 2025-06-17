@@ -12,6 +12,14 @@ An AI-powered application that generates summaries, action items, and sentiment 
 - Modern, responsive UI
 - Drag-and-drop file upload
 
+## Screenshots
+
+![Application Interface](Screenshot%202025-06-17%20at%206.59.00%20PM.png)
+*Main application interface showing the upload and processing options*
+
+![Results View](Screenshot%202025-06-17%20at%206.40.31%20PM.png)
+*Results view showing the generated summary, action items, and sentiment analysis*
+
 ## Tech Stack
 
 - Frontend: HTML, CSS (Tailwind), JavaScript
