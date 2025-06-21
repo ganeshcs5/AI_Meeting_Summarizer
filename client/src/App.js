@@ -3,16 +3,17 @@ import { useAuth } from './contexts/AuthContext';
 import Login from './components/Login';
 import Register from './components/Register';
 import Profile from './components/Profile';
+import Breadcrumb from './components/Breadcrumb';
 import './App.css';
 
 function App() {
-  const { user, loading, isAuthenticated } = useAuth();
+  const { loading, isAuthenticated, logout } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
   const [showAuth, setShowAuth] = useState('login'); // 'login' or 'register'
-  const [showProfile, setShowProfile] = useState(false);
+  const [currentPage, setCurrentPage] = useState('meeting-summarizer'); // 'meeting-summarizer' or 'profile'
   const fileInputRef = useRef(null);
 
   const handleFileUpload = async (file) => {
@@ -127,13 +128,22 @@ function App() {
     fileInputRef.current.click();
   };
 
+  const handleNavigate = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setCurrentPage('meeting-summarizer');
+  };
+
   // Show loading screen while checking authentication
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading...</p>
         </div>
       </div>
     );
@@ -149,37 +159,42 @@ function App() {
   }
 
   // Show profile page if requested
-  if (showProfile) {
-    return <Profile onBack={() => setShowProfile(false)} />;
+  if (currentPage === 'profile') {
+    return (
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+        <Breadcrumb 
+          currentPage={currentPage} 
+          onNavigate={handleNavigate} 
+          onLogout={handleLogout}
+        />
+        <Profile onBack={() => handleNavigate('meeting-summarizer')} />
+      </div>
+    );
   }
 
   // Main application interface
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+      <Breadcrumb 
+        currentPage={currentPage} 
+        onNavigate={handleNavigate} 
+        onLogout={handleLogout}
+      />
+      
       <div className="container mx-auto px-4 py-8">
         <header className="text-center mb-12">
-          <div className="flex justify-between items-center mb-4">
-            <div></div>
-            <h1 className="text-4xl font-bold text-gray-800">AI Meeting Summarizer</h1>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">Welcome, {user?.username}!</span>
-              <button
-                onClick={() => setShowProfile(true)}
-                className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
-              >
-                Profile
-              </button>
-            </div>
-          </div>
-          <p className="text-gray-600">Upload meeting audio or provide a YouTube link to get an AI-powered summary</p>
+          <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-4">AI Meeting Summarizer</h1>
+          <p className="text-gray-600 dark:text-gray-300">Upload meeting audio or provide a YouTube link to get an AI-powered summary</p>
         </header>
 
-        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
+        <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
           <div className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">Upload Audio File</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">Upload Audio File</h2>
             <div 
               className={`border-2 border-dashed rounded-lg p-6 text-center transition-all duration-300 ${
-                isDragOver ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
+                isDragOver 
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
+                  : 'border-gray-300 dark:border-gray-600'
               }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -194,27 +209,27 @@ function App() {
               />
               <button
                 onClick={handleChooseFile}
-                className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+                className="cursor-pointer bg-blue-500 dark:bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
               >
                 Choose Audio File
               </button>
-              <p className="text-gray-500 mt-2">or drag and drop your file here</p>
+              <p className="text-gray-500 dark:text-gray-400 mt-2">or drag and drop your file here</p>
             </div>
           </div>
 
           <div className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">YouTube Video</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">YouTube Video</h2>
             <form onSubmit={handleYouTubeSubmit} className="space-y-4">
               <input
                 type="url"
                 value={youtubeUrl}
                 onChange={(e) => setYoutubeUrl(e.target.value)}
                 placeholder="Enter YouTube URL"
-                className="w-full px-4 py-2 border rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
               <button
                 type="submit"
-                className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition-colors"
+                className="bg-green-500 dark:bg-green-600 text-white px-6 py-2 rounded hover:bg-green-600 dark:hover:bg-green-700 transition-colors"
               >
                 Process Video
               </button>
@@ -224,20 +239,20 @@ function App() {
           {isLoading && (
             <div className="text-center py-4">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-              <p className="mt-2 text-gray-600">Processing your request...</p>
+              <p className="mt-2 text-gray-600 dark:text-gray-300">Processing your request...</p>
             </div>
           )}
 
           {results && (
             <div className="space-y-4">
-              <h2 className="text-2xl font-semibold mb-4">Results</h2>
-              <div className="bg-gray-50 p-4 rounded">
-                <h3 className="font-semibold mb-2">Summary</h3>
-                <p className="text-gray-700">{results.summary || 'No summary available'}</p>
+              <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">Results</h2>
+              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded">
+                <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">Summary</h3>
+                <p className="text-gray-700 dark:text-gray-300">{results.summary || 'No summary available'}</p>
               </div>
-              <div className="bg-gray-50 p-4 rounded">
-                <h3 className="font-semibold mb-2">Action Items</h3>
-                <ul className="list-disc list-inside text-gray-700">
+              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded">
+                <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">Action Items</h3>
+                <ul className="list-disc list-inside text-gray-700 dark:text-gray-300">
                   {results.actionItems && results.actionItems.length > 0 ? (
                     results.actionItems.map((item, index) => (
                       <li key={index}>{item}</li>
@@ -247,9 +262,9 @@ function App() {
                   )}
                 </ul>
               </div>
-              <div className="bg-gray-50 p-4 rounded">
-                <h3 className="font-semibold mb-2">Sentiment Analysis</h3>
-                <p className="text-gray-700">{results.sentiment || 'No sentiment analysis available'}</p>
+              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded">
+                <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">Sentiment Analysis</h3>
+                <p className="text-gray-700 dark:text-gray-300">{results.sentiment || 'No sentiment analysis available'}</p>
               </div>
             </div>
           )}
