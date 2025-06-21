@@ -5,15 +5,38 @@ const multer = require('multer');
 const path = require('path');
 const aiProcessor = require('./services/aiProcessor');
 const youtubeProcessor = require('./services/youtubeProcessor');
+const { initDatabase } = require('./services/database');
+const { authenticateToken, optionalAuth } = require('./services/auth');
+const authRoutes = require('./services/authRoutes');
 const fs = require('fs');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
+
+// Initialize database
+let db;
+initDatabase()
+    .then(database => {
+        db = database;
+        console.log('Database initialized successfully');
+    })
+    .catch(err => {
+        console.error('Failed to initialize database:', err);
+        process.exit(1);
+    });
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+
+// Add database to request object
+app.use((req, res, next) => {
+    req.db = db;
+    next();
+});
+
+// Serve static files from the React build directory
+app.use(express.static(path.join(__dirname, 'client/build')));
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -27,8 +50,11 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Routes
-app.post('/api/upload', upload.single('audio'), async (req, res) => {
+// Authentication routes
+app.use('/api/auth', authRoutes);
+
+// Protected API Routes (require authentication)
+app.post('/api/upload', authenticateToken, upload.single('audio'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
@@ -47,7 +73,7 @@ app.post('/api/upload', upload.single('audio'), async (req, res) => {
     }
 });
 
-app.post('/api/youtube', async (req, res) => {
+app.post('/api/youtube', authenticateToken, async (req, res) => {
     try {
         const { url } = req.body;
         if (!url) {
@@ -63,6 +89,22 @@ app.post('/api/youtube', async (req, res) => {
     }
 });
 
+// Public health check endpoint
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'OK', 
+        message: 'AI Meeting Summarizer API is running',
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Serve React app for all other routes
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+});
+
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
+    console.log(`API available at http://localhost:${port}/api`);
+    console.log(`React app available at http://localhost:${port}`);
 }); 

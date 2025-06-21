@@ -1,20 +1,42 @@
 {
-  "name": "video-summary",
+  "name": "ai-meeting-summarizer",
   "version": "1.0.0",
-  "description": "AI-powered video and meeting summarizer",
+  "description": "AI-powered meeting summarizer with React frontend",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "client": "cd client && npm start",
+    "client-build": "cd client && npm run build",
+    "dev-full": "concurrently \"npm run dev\" \"npm run client\"",
+    "install-client": "cd client && npm install",
+    "build": "npm run client-build"
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "multer": "^1.4.5-lts.1",
-    "openai": "^4.0.0"
+    "openai": "^4.20.1",
+    "ytdl-core": "^4.11.5",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "sqlite3": "^5.1.6",
+    "express-validator": "^7.0.1"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22"
-  }
+    "nodemon": "^3.0.2",
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "ai",
+    "meeting",
+    "summarizer",
+    "react",
+    "nodejs",
+    "openai",
+    "authentication"
+  ],
+  "author": "",
+  "license": "MIT"
 } 
